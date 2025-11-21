@@ -3,7 +3,7 @@
     "header": "eyJmaWQiOjI3NzQyMSwidHlwZSI6ImN1c3RvZHkiLCJrZXkiOiIweDNFMzg3YjNlM0Y0NkRkNjM0OTU3QTc2Y2ZlNUFBQkUzYzMxRjk4ZmEifQ",
     "payload": "eyJkb21haW4iOiJ6b2RpYWMtYXBwLXNpeC52ZXJjZWwuYXBwIn0",
     "signature": "fnoIa8C4o/g7gdCHZTFN5kM2ZbY6b1oIXWXSYgsqq/I3166c1bGerz0Ancupj9OtUZeqNo1M5/QG+VAtlVprxxw="
-  }
+  },
   "frame": {
     "name": "Crypto Zodiac",
     "version": "1",
