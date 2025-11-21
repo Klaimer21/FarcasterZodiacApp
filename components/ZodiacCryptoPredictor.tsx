@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Sparkles, User, Share2, Download, Zap, Star, Target, Trophy, Shield, Heart, Twitter } from 'lucide-react';
+import { Sparkles, User, Share2, Download, Zap, Star, Target, Trophy, Shield, Heart, Twitter, LogIn } from 'lucide-react';
 import { FarcasterUser, ZodiacPrediction } from '../types';
 import { ZODIAC_SIGNS, ZODIAC_PREDICTIONS, CRYPTO_ADVICE } from '../lib/zodiac-data';
 
@@ -15,21 +15,7 @@ const ZodiacCryptoPredictor: React.FC = () => {
   useEffect(() => {
     const initApp = async () => {
       try {
-        const isInFrame = window.parent !== window;
-        
-        if (!isInFrame) {
-          // Development mode
-          setUser({
-            fid: Math.floor(Math.random() * 10000) + 1000,
-            username: 'cryptohoroscope',
-            displayName: 'Crypto Horoscope'
-          });
-          setLoading(false);
-          return;
-        }
-
         await loadFarcasterSDK();
-        
       } catch (error) {
         console.error('Initialization error:', error);
         setLoading(false);
@@ -77,14 +63,31 @@ const ZodiacCryptoPredictor: React.FC = () => {
       const context = await sdk.context;
       
       if (context?.user) {
-        setUser(context.user);
+        setUser(context.user as FarcasterUser);
       }
 
       await sdk.actions.ready();
-      setLoading(false);
     } catch (error) {
       console.error('SDK initialization error:', error);
-      throw error;
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleSignIn = async () => {
+    if (!window.FrameSDK) return;
+
+    try {
+      setLoading(true);
+      const result = await window.FrameSDK.actions.signIn();
+      
+      if (result.user) {
+        setUser(result.user as FarcasterUser);
+      }
+    } catch (error) {
+      console.error('Sign in failed:', error);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -190,6 +193,52 @@ Check your crypto horoscope 👇`;
     );
   }
 
+  // Sign In Screen if no user is authenticated
+  if (!user) {
+    return (
+      <div className="min-h-screen bg-gradient-to-b from-purple-900 via-blue-900 to-indigo-900 flex flex-col items-center justify-center px-4 text-white font-sans">
+        <div className="max-w-md w-full text-center space-y-8 p-8 bg-white/5 backdrop-blur-md rounded-3xl border border-cyan-500/20 shadow-2xl">
+          <div className="flex items-center justify-center gap-3 mb-4">
+            <div className="bg-cyan-500 p-3 rounded-2xl shadow-lg shadow-cyan-500/20 animate-pulse">
+              <Sparkles className="text-white" size={32} />
+            </div>
+          </div>
+          
+          <div>
+            <h1 className="text-4xl font-bold bg-gradient-to-r from-cyan-400 to-purple-400 bg-clip-text text-transparent mb-2">
+              Crypto Zodiac
+            </h1>
+            <p className="text-cyan-200/80 text-lg">
+              Unlock your cosmic trading personality
+            </p>
+          </div>
+
+          <div className="py-8">
+            <div className="w-24 h-24 bg-cyan-500/10 rounded-full mx-auto flex items-center justify-center mb-4 relative">
+              <div className="absolute inset-0 border-2 border-cyan-500/30 rounded-full animate-ping opacity-20"></div>
+              <Shield className="text-cyan-400" size={40} />
+            </div>
+            <p className="text-sm text-cyan-300/60 px-8">
+              Connect your Farcaster account to discover your trading destiny
+            </p>
+          </div>
+
+          <button
+            onClick={handleSignIn}
+            className="w-full bg-white hover:bg-cyan-50 text-purple-900 font-bold py-4 px-6 rounded-xl transition-all transform hover:scale-105 shadow-lg flex items-center justify-center gap-3"
+          >
+            <LogIn size={20} />
+            <span>Sign in with Farcaster</span>
+          </button>
+        </div>
+        
+        <p className="mt-8 text-cyan-300/40 text-xs">
+          Powered by Farcaster Frames v2
+        </p>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-gradient-to-b from-purple-900 via-blue-900 to-indigo-900 text-white font-sans">
       <div className="container mx-auto px-4 py-6 sm:py-8 max-w-4xl">
@@ -210,25 +259,23 @@ Check your crypto horoscope 👇`;
         </div>
 
         {/* User Info */}
-        {user && (
-          <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-4 sm:p-6 mb-6 sm:mb-8 border border-cyan-500/20 shadow-xl">
-            <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
-              <div className="flex items-center gap-4 w-full sm:w-auto">
-                <div className="bg-cyan-500/20 p-3 rounded-xl shrink-0">
-                  <User className="text-cyan-400" size={24} />
-                </div>
-                <div className="overflow-hidden">
-                  <h3 className="text-lg sm:text-xl font-bold text-white truncate">@{user.username}</h3>
-                  <p className="text-cyan-300/70 text-sm">FID: {user.fid}</p>
-                </div>
+        <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-4 sm:p-6 mb-6 sm:mb-8 border border-cyan-500/20 shadow-xl">
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+            <div className="flex items-center gap-4 w-full sm:w-auto">
+              <div className="bg-cyan-500/20 p-3 rounded-xl shrink-0">
+                <User className="text-cyan-400" size={24} />
               </div>
-              <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-green-500/20 border border-green-500/30 w-full sm:w-auto justify-center sm:justify-start">
-                <div className="w-2 h-2 rounded-full bg-green-400 animate-pulse"></div>
-                <span className="text-green-400 text-xs sm:text-sm font-medium">Cosmically Connected</span>
+              <div className="overflow-hidden">
+                <h3 className="text-lg sm:text-xl font-bold text-white truncate">@{user.username}</h3>
+                <p className="text-cyan-300/70 text-sm">FID: {user.fid}</p>
               </div>
             </div>
+            <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-green-500/20 border border-green-500/30 w-full sm:w-auto justify-center sm:justify-start">
+              <div className="w-2 h-2 rounded-full bg-green-400 animate-pulse"></div>
+              <span className="text-green-400 text-xs sm:text-sm font-medium">Cosmically Connected</span>
+            </div>
           </div>
-        )}
+        </div>
 
         <div className="grid lg:grid-cols-2 gap-6 sm:gap-8">
           
