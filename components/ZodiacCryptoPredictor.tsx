@@ -1,11 +1,13 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Sparkles, User, Share2, Download, Zap, Star, Target, Trophy, Shield, Heart, Twitter, LogIn } from 'lucide-react';
+import sdk from '@farcaster/frame-sdk';
 import { FarcasterUser, ZodiacPrediction } from '../types';
 import { ZODIAC_SIGNS, ZODIAC_PREDICTIONS, CRYPTO_ADVICE } from '../lib/zodiac-data';
 
 const ZodiacCryptoPredictor: React.FC = () => {
   const [user, setUser] = useState<FarcasterUser | null>(null);
   const [loading, setLoading] = useState(true);
+  const [isSDKLoaded, setIsSDKLoaded] = useState(false);
   const [selectedSign, setSelectedSign] = useState<string | null>(null);
   const [prediction, setPrediction] = useState<ZodiacPrediction | null>(null);
   const [generating, setGenerating] = useState(false);
@@ -13,73 +15,30 @@ const ZodiacCryptoPredictor: React.FC = () => {
 
   // Initialize Farcaster SDK
   useEffect(() => {
-    const initApp = async () => {
+    const load = async () => {
       try {
-        await loadFarcasterSDK();
+        const context = await sdk.context;
+        if (context?.user) {
+          setUser(context.user as FarcasterUser);
+        }
+        sdk.actions.ready();
       } catch (error) {
-        console.error('Initialization error:', error);
+        console.error('SDK initialization error:', error);
+      } finally {
         setLoading(false);
       }
     };
 
-    initApp();
-  }, []);
-
-  const loadFarcasterSDK = async (): Promise<void> => {
-    return new Promise((resolve, reject) => {
-      if (window.FrameSDK) {
-        initializeSDK().then(resolve).catch(reject);
-        return;
-      }
-
-      const script = document.createElement('script');
-      script.src = 'https://unpkg.com/@farcaster/frame-sdk@0.0.6/dist/index.global.js';
-      script.async = true;
-
-      script.onload = async () => {
-        try {
-          await initializeSDK();
-          resolve();
-        } catch (error) {
-          reject(error);
-        }
-      };
-
-      script.onerror = () => {
-        reject(new Error('Failed to load Farcaster SDK'));
-      };
-
-      document.head.appendChild(script);
-    });
-  };
-
-  const initializeSDK = async (): Promise<void> => {
-    if (!window.FrameSDK) {
-      throw new Error('FrameSDK not available');
+    if (sdk && !isSDKLoaded) {
+      setIsSDKLoaded(true);
+      load();
     }
+  }, [isSDKLoaded]);
 
-    try {
-      const sdk = window.FrameSDK;
-      const context = await sdk.context;
-      
-      if (context?.user) {
-        setUser(context.user as FarcasterUser);
-      }
-
-      await sdk.actions.ready();
-    } catch (error) {
-      console.error('SDK initialization error:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleSignIn = async () => {
-    if (!window.FrameSDK) return;
-
+  const handleSignIn = useCallback(async () => {
     try {
       setLoading(true);
-      const result = await window.FrameSDK.actions.signIn();
+      const result = await sdk.actions.signIn();
       
       if (result.user) {
         setUser(result.user as FarcasterUser);
@@ -89,7 +48,7 @@ const ZodiacCryptoPredictor: React.FC = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
   const generatePrediction = (signId: string) => {
     setGenerating(true);
@@ -262,12 +221,18 @@ Check your crypto horoscope 👇`;
         <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-4 sm:p-6 mb-6 sm:mb-8 border border-cyan-500/20 shadow-xl">
           <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
             <div className="flex items-center gap-4 w-full sm:w-auto">
-              <div className="bg-cyan-500/20 p-3 rounded-xl shrink-0">
-                <User className="text-cyan-400" size={24} />
+              <div className="bg-cyan-500/20 p-3 rounded-xl shrink-0 overflow-hidden">
+                {user.pfpUrl ? (
+                  <img src={user.pfpUrl} alt={user.username} className="w-6 h-6 rounded-full object-cover" />
+                ) : (
+                  <User className="text-cyan-400" size={24} />
+                )}
               </div>
               <div className="overflow-hidden">
-                <h3 className="text-lg sm:text-xl font-bold text-white truncate">@{user.username}</h3>
-                <p className="text-cyan-300/70 text-sm">FID: {user.fid}</p>
+                <h3 className="text-lg sm:text-xl font-bold text-white truncate">
+                  {user.displayName || `@${user.username}`}
+                </h3>
+                <p className="text-cyan-300/70 text-sm">@{user.username} • FID: {user.fid}</p>
               </div>
             </div>
             <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-green-500/20 border border-green-500/30 w-full sm:w-auto justify-center sm:justify-start">
