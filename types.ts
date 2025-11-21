@@ -2,7 +2,7 @@ export interface FarcasterUser {
   fid: number;
   username: string;
   displayName?: string;
-  pfp?: string;
+  pfpUrl?: string;
   bio?: string;
 }
 
@@ -23,7 +23,6 @@ export interface ZodiacPrediction {
 declare global {
   interface Window {
     FrameSDK: any;
-    // Fix: Add ethereum property to Window interface to resolve TS errors when accessing window.ethereum
     ethereum?: any;
   }
 }
