@@ -1,0 +1,10 @@
+{
+  "name": "Zodiac Crypto Predictor",
+  "version": "1",
+  "iconUrl": "https://placehold.co/200x200/312e81/cyan?text=Zodiac",
+  "homeUrl": "https://zodiac-crypto-predictor.vercel.app",
+  "imageUrl": "https://placehold.co/1200x630/312e81/cyan?text=Zodiac+Crypto+Predictor",
+  "splashImageUrl": "https://placehold.co/200x200/312e81/cyan?text=Loading...",
+  "splashBackgroundColor": "#312e81",
+  "webhookUrl": "https://zodiac-crypto-predictor.vercel.app/api/webhook"
+}
