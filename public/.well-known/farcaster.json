@@ -11,7 +11,7 @@
     "homeUrl": "https://zodiac-app-six.vercel.app",
     "imageUrl": "https://zodiac-app-six.vercel.app/image.png",
     "buttonTitle": "Open Mini App",
-    "splashImageUrl": "https://zodiac-app-six.vercel.app/image.png",
+    "splashImageUrl": "https://zodiac-app-six.vercel.app/icon.png",
     "splashBackgroundColor": "#6200EA",
     "webhookUrl": "https://zodiac-app-six.vercel.app/api/webhook",
     "subtitle": "Trading prognoses for everyone",
